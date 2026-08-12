@@ -7,4 +7,5 @@ app_name = "activities"
 
 urlpatterns = [
     path("", views.activity_list, name="list"),
+    path("api/activities/", views.activity_api_list, name="api-list"),
 ]
