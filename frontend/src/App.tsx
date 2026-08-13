@@ -1,4 +1,4 @@
-import { Suspense, use } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
 interface Activity {
@@ -17,22 +17,43 @@ async function fetchActivities(): Promise<Activity[]> {
   return payload.data
 }
 
-const activitiesPromise = fetchActivities()
-
 function App() {
   return (
     <main>
       <h1>Vite + React + TypeScript</h1>
-      <p>Frontend conectado con Django a través de use().</p>
-      <Suspense fallback={<p>Cargando actividades...</p>}>
-        <ActivitiesList promise={activitiesPromise} />
-      </Suspense>
+      <p>Frontend conectado con Django a través de useEffect.</p>
+      <ActivitiesList />
     </main>
   )
 }
 
-function ActivitiesList({ promise }: { promise: Promise<Activity[]> }) {
-  const activities = use(promise)
+function ActivitiesList() {
+  const [activities, setActivities] = useState<Activity[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetchActivities()
+      .then((data) => {
+        if (!cancelled) setActivities(data)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Error desconocido')
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (error) {
+    return <p>Error: {error}</p>
+  }
+
+  if (activities === null) {
+    return <p>Cargando actividades...</p>
+  }
 
   if (activities.length === 0) {
     return <p>No hay actividades cargadas.</p>
