@@ -20,7 +20,7 @@ urlpatterns = [
     # DELETE /api/v1/me/enrollments/{activity_id}
     path(
         "api/v1/me/enrollments/<uuid:activity_id>/",
-        views.activity_api_enrollments,
+        views.EnrollmentDetailView.as_view(),
         name="api-enrollment-detail",
     ),
 ]
