@@ -1,0 +1,113 @@
+openapi: 3.2.0
+info:
+  title: Activities API
+  version: 1.0.0
+  description: Contrato de la API de actividades e inscripciones.
+
+servers:
+  - url: http://127.0.0.1:8000
+    description: Servidor local de desarrollo
+
+tags:
+  - name: Activities
+    description: Consulta de actividades disponibles.
+
+paths:
+  /api/v1/activities:
+    get:
+      tags:
+        - Activities
+      summary: Listar actividades
+      description: Devuelve las actividades ordenadas por fecha de inicio.
+      operationId: listActivities
+      responses:
+        '200':
+          $ref: '#/components/responses/ActivitiesList'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+
+  /api/v1/activities/{activity_id}:
+    get:
+      tags:
+        - Activities
+      summary: Consultar una actividad
+      description: Devuelve una actividad identificada por su UUID.
+      operationId: getActivity
+      parameters:
+        - name: activity_id
+          in: path
+          required: true
+          description: Identificador único de la actividad.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          $ref: '#/components/responses/ActivityDetail'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+
+components:
+  schemas:
+    Activity:
+      type: object
+      required:
+        - id
+        - title
+        - starts_at
+        - capacity
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identificador único de la actividad.
+        title:
+          type: string
+          description: Nombre visible de la actividad.
+        starts_at:
+          type: string
+          format: date-time
+          description: Fecha y hora de inicio en formato ISO 8601.
+        capacity:
+          type: integer
+          minimum: 0
+          description: Cantidad máxima de participantes.
+
+  responses:
+    ActivitiesList:
+      description: Lista de actividades.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Activity'
+
+    ActivityDetail:
+      description: Una actividad identificada por su UUID.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Activity'
+
+    NotFound:
+      description: Recurso no encontrado.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: No se encontró la actividad.
+
+    MethodNotAllowed:
+      description: Método no permitido; la ruta solo acepta el método declarado.
+      headers:
+        Allow:
+          description: Método HTTP admitido por la ruta.
+          schema:
+            type: string
+            example: GET
