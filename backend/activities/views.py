@@ -5,9 +5,9 @@ from uuid import UUID
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.decorators import method_decorator
-from django.utils import timezone
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
@@ -20,7 +20,6 @@ from .representations import (
     serialize_activity,
     serialize_enrollment,
 )
-
 
 api = NinjaAPI(title="Activities API", version="1.0.0")
 

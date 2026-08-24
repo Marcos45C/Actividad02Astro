@@ -1,0 +1,77 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import EnrollmentStatus from '../../components/EnrollmentStatus';
+
+export async function getStaticPaths() {
+  const API = 'http://127.0.0.1:8000';
+  let activities: { id: string }[] = [];
+  try {
+    const res = await fetch(`${API}/api/v1/activities`);
+    if (res.ok) {
+      activities = await res.json();
+    }
+  } catch (e) {
+    console.error('Error fetching activities for paths:', e);
+  }
+  return activities.map((act) => ({ params: { id: act.id } }));
+}
+
+const API_BASE = import.meta.env.API_BASE || 'http://127.0.0.1:8000';
+
+interface Activity {
+  id: string;
+  title: string;
+  starts_at: string;
+  capacity: number;
+  available_slots: number;
+}
+
+const { id } = Astro.params;
+
+let activity: Activity | null = null;
+try {
+  const res = await fetch(`${API_BASE}/api/v1/activities/${id}`);
+  if (res.ok) {
+    activity = await res.json();
+  }
+} catch (e) {
+  console.error('Error fetching activity:', e);
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('es-AR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+---
+<Layout title={activity ? activity.title : 'Actividad'}>
+  <a href="/activities">&larr; Volver al listado</a>
+
+  {activity ? (
+    <article style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 1rem;">
+      <h1>{activity.title}</h1>
+      <p style="color: #666; margin: 0.5rem 0;">Contenido estático generado en build (SSG)</p>
+      <div style="margin: 1.5rem 0;">
+        <p><strong>Fecha:</strong> {formatDate(activity.starts_at)}</p>
+        <p><strong>Capacidad:</strong> {activity.capacity}</p>
+        <p><strong>Cupos disponibles:</strong> {activity.available_slots}</p>
+      </div>
+
+      <hr style="margin: 1.5rem 0;" />
+
+      <h2>Inscripción</h2>
+      <p style="color: #666; margin: 0.5rem 0;">Región interactiva que se ejecuta en el navegador (client island)</p>
+      <EnrollmentStatus
+        client:load
+        activityId={activity.id}
+        apiBase={API_BASE}
+      />
+    </article>
+  ) : (
+    <p>Actividad no encontrada.</p>
+  )}
+</Layout>
