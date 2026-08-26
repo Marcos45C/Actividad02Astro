@@ -77,7 +77,6 @@ marcadores de color aleatorio:
 | **Color de build** | Frontmatter de `[id].astro`, en build time | Solo con un nuevo `pnpm build` |
 | **Color de cliente** | `useState(randomColor)` dentro de `EnrollmentStatus.tsx`, al montar en el navegador | Cada vez que se recarga la página completa (remount) |
 
-<img width="1731" height="469" alt="05-cancelarInscripcion" src="https://github.com/user-attachments/assets/a76898c5-7ed9-4658-8e76-2ff705a9f0d8" />
 
 **Secuencia de prueba y resultado esperado:**
 
@@ -102,26 +101,11 @@ sin cambios. Esto es la diferencia entre *re-render* (cambia el estado dentro de
 componente montado) y *remount* (el componente se vuelve a montar desde cero, como ocurre en
 cada recarga completa de página).
 
-### 5. Caso de error — 409 Conflict
 
-Pasos para reproducirlo:
 
-1. Elegir una actividad con `capacity` baja (ej. 1) en el fixture.
-2. Inscribir a un participante en esa actividad (vía Postman o curl).
-3. Cambiar `PUBLIC_DEMO_PARTICIPANT_ID` en el `.env` a otro participante, rebuildear y volver
-   a intentar "Inscribirme" en la misma actividad desde la isla de cliente.
-4. Confirmar que aparece el mensaje "No quedan cupos disponibles." en la UI.
-
-**Captura sugerida:** el mensaje de error en pantalla + la pestaña Network mostrando el `PUT`
-con status `409`.
-
----
-
-## Checkpoint conceptual
 
 > ¿Qué datos quedaron "congelados" en el resultado del build y qué tendría que ocurrir para que cambien?
 
-_(completar con la redacción del equipo — como guía)_
 
 Quedan congelados en el HTML generado por `pnpm build`: el título, la fecha de inicio, la
 capacidad total y el color de build de cada actividad. Estos valores reflejan el estado de la
