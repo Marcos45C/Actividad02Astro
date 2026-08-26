@@ -20,23 +20,17 @@ Comando ejecutado:
 pnpm build
 ```
 
-Salida relevante (pegar la parte donde dice qué páginas generó):
+<img width="913" height="458" alt="pnpmbuild" src="https://github.com/user-attachments/assets/0853a012-8a86-4d9c-a59b-3a2e27aba307" />
 
-```
-(pegar acá la salida de la terminal)
-```
 
 Listado de páginas generadas por actividad:
 
 ```bash
 ls dist/activities/
 ```
+<img width="1491" height="377" alt="lsactivitis" src="https://github.com/user-attachments/assets/5672aa54-6ece-4014-b6b7-f976cb2337c6" />
 
-```
-(pegar acá el listado — debería haber una carpeta por cada UUID de actividad)
-```
 
-**Captura sugerida:** terminal mostrando el resultado de `ls dist/activities/`.
 
 ### 2. Evidencia de HTML
 
@@ -53,8 +47,8 @@ Confirmar en el HTML crudo:
 - [ ] El color de build (banda de color arriba de la página) **ya está presente**, con un valor `hsl(...)` fijo.
 - [ ] **NO** aparece el texto "Cargando estado de inscripción..." ni "Estás inscripto"/"No estás inscripto" en ningún lado del HTML crudo.
 
-**Captura sugerida:** "Ver código fuente de la página" (`Ctrl+U`) en el navegador, resaltando que el
-contenido de la isla de inscripción no está ahí.
+<img width="1881" height="518" alt="3-codigo" src="https://github.com/user-attachments/assets/30649026-8d93-4b17-ac1f-793a08a5dc39" />
+
 
 ---
 
@@ -70,8 +64,8 @@ Con `pnpm preview` corriendo y DevTools abierto (pestaña **Network**, filtro **
 3. Hacer clic en "Inscribirme" (o "Cancelar inscripción") y confirmar que dispara un
    `PUT` (o `DELETE`) a `/api/v1/me/enrollments/{activity_id}`.
 
-**Captura sugerida:** pestaña Network mostrando la secuencia de requests: documento HTML →
-`GET /api/v1/me/enrollments` → (al hacer clic) `PUT` o `DELETE`.
+<img width="1773" height="641" alt="04-recarga" src="https://github.com/user-attachments/assets/84ee3a39-2a2f-44bc-9c52-deb134e3dbbb" />
+
 
 ### 4. Evidencia de cambio de datos — la prueba de los dos colores
 
@@ -82,6 +76,8 @@ marcadores de color aleatorio:
 |---|---|---|
 | **Color de build** | Frontmatter de `[id].astro`, en build time | Solo con un nuevo `pnpm build` |
 | **Color de cliente** | `useState(randomColor)` dentro de `EnrollmentStatus.tsx`, al montar en el navegador | Cada vez que se recarga la página completa (remount) |
+
+<img width="1731" height="469" alt="05-cancelarInscripcion" src="https://github.com/user-attachments/assets/a76898c5-7ed9-4658-8e76-2ff705a9f0d8" />
 
 **Secuencia de prueba y resultado esperado:**
 
@@ -95,6 +91,9 @@ marcadores de color aleatorio:
 - [ ] Captura: color de build y de cliente en la carga inicial.
 - [ ] Captura: después de recargar — el color de build es igual, el de cliente cambió.
 - [ ] Captura: después de clickear el botón sin recargar — ambos colores iguales a la captura anterior, pero el texto de inscripción cambió.
+
+<img width="1731" height="469" alt="05-cancelarInscripcion" src="https://github.com/user-attachments/assets/1b426bc4-9081-4c98-ac26-59c218b96956" />
+
 
 **Conclusión que demuestra esta evidencia:** al hacer clic en el botón, solo se actualiza la
 región manejada por React (el estado de inscripción); el resto de la página —incluido el color
