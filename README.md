@@ -87,9 +87,6 @@ marcadores de color aleatorio:
 | Clic en "Inscribirme"/"Cancelar" (sin recargar) | Color A (igual) | Color Y (**igual**, no hubo remount) | cambia de "no inscripto" a "inscripto" (o viceversa) |
 | `pnpm build` de nuevo + recargar | Color B (**cambió**) | Color Z (cambió) | según backend |
 
-- [ ] Captura: color de build y de cliente en la carga inicial.
-- [ ] Captura: después de recargar — el color de build es igual, el de cliente cambió.
-- [ ] Captura: después de clickear el botón sin recargar — ambos colores iguales a la captura anterior, pero el texto de inscripción cambió.
 
 <img width="1731" height="469" alt="05-cancelarInscripcion" src="https://github.com/user-attachments/assets/1b426bc4-9081-4c98-ac26-59c218b96956" />
 
