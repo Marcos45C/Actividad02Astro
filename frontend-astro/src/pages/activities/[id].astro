@@ -1,77 +1,38 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import EnrollmentStatus from '../../components/EnrollmentStatus';
+import { getActivities, getActivity } from '../../lib/api';
+import EnrollmentStatus from '../../components/EnrollmentStatus.tsx';
 
 export async function getStaticPaths() {
-  const API = 'http://127.0.0.1:8000';
-  let activities: { id: string }[] = [];
-  try {
-    const res = await fetch(`${API}/api/v1/activities`);
-    if (res.ok) {
-      activities = await res.json();
-    }
-  } catch (e) {
-    console.error('Error fetching activities for paths:', e);
-  }
-  return activities.map((act) => ({ params: { id: act.id } }));
-}
-
-const API_BASE = import.meta.env.API_BASE || 'http://127.0.0.1:8000';
-
-interface Activity {
-  id: string;
-  title: string;
-  starts_at: string;
-  capacity: number;
-  available_slots: number;
+  const activities = await getActivities();
+  return activities.map((activity) => ({ params: { id: activity.id } }));
 }
 
 const { id } = Astro.params;
+const activity = await getActivity(id as string);
 
-let activity: Activity | null = null;
-try {
-  const res = await fetch(`${API_BASE}/api/v1/activities/${id}`);
-  if (res.ok) {
-    activity = await res.json();
-  }
-} catch (e) {
-  console.error('Error fetching activity:', e);
-}
+const apiBase = import.meta.env.PUBLIC_API_BASE;
+const participantId = import.meta.env.PUBLIC_DEMO_PARTICIPANT_ID;
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('es-AR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+// Se genera UNA sola vez, en build time. Queda fijo en el HTML resultante
+// hasta el próximo `pnpm build` — sirve para demostrar qué quedó "congelado".
+const buildColor = `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
 ---
-<Layout title={activity ? activity.title : 'Actividad'}>
-  <a href="/activities">&larr; Volver al listado</a>
+<Layout title={activity.title}>
+  <div style={`padding: 0.5rem 1rem; background:${buildColor}; border-radius:6px; margin-bottom:1rem;`}>
+    <strong>Color de build:</strong> {buildColor}
+    <br />
+    <small>Generado en build time — no cambia al recargar, solo con un nuevo `pnpm build`.</small>
+  </div>
 
-  {activity ? (
-    <article style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 1rem;">
-      <h1>{activity.title}</h1>
-      <p style="color: #666; margin: 0.5rem 0;">Contenido estático generado en build (SSG)</p>
-      <div style="margin: 1.5rem 0;">
-        <p><strong>Fecha:</strong> {formatDate(activity.starts_at)}</p>
-        <p><strong>Capacidad:</strong> {activity.capacity}</p>
-        <p><strong>Cupos disponibles:</strong> {activity.available_slots}</p>
-      </div>
+  <h1>{activity.title}</h1>
+  <p>{new Date(activity.starts_at).toLocaleString('es-AR')}</p>
+  <p>Capacidad: {activity.capacity}</p>
 
-      <hr style="margin: 1.5rem 0;" />
-
-      <h2>Inscripción</h2>
-      <p style="color: #666; margin: 0.5rem 0;">Región interactiva que se ejecuta en el navegador (client island)</p>
-      <EnrollmentStatus
-        client:load
-        activityId={activity.id}
-        apiBase={API_BASE}
-      />
-    </article>
-  ) : (
-    <p>Actividad no encontrada.</p>
-  )}
+  <EnrollmentStatus
+    client:load
+    activityId={activity.id}
+    apiBase={apiBase}
+    participantId={participantId}
+  />
 </Layout>
