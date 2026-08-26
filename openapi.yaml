@@ -11,6 +11,8 @@ servers:
 tags:
   - name: Activities
     description: Consulta de actividades disponibles.
+  - name: Enrollments
+    description: Inscripciones del participante actual (no expone un padrón público).
 
 paths:
   /api/v1/activities:
@@ -34,13 +36,7 @@ paths:
       description: Devuelve una actividad identificada por su UUID.
       operationId: getActivity
       parameters:
-        - name: activity_id
-          in: path
-          required: true
-          description: Identificador único de la actividad.
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/ActivityId'
       responses:
         '200':
           $ref: '#/components/responses/ActivityDetail'
@@ -49,7 +45,106 @@ paths:
         '405':
           $ref: '#/components/responses/MethodNotAllowed'
 
+  /api/v1/me/enrollments:
+    get:
+      tags:
+        - Enrollments
+      summary: Listar mis inscripciones
+      description: >
+        Devuelve las inscripciones activas del participante identificado por
+        el header de demostración. No expone inscripciones de otros
+        participantes.
+      operationId: listMyEnrollments
+      parameters:
+        - $ref: '#/components/parameters/DemoParticipantId'
+      responses:
+        '200':
+          $ref: '#/components/responses/EnrollmentsList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+
+  /api/v1/me/enrollments/{activity_id}:
+    put:
+      tags:
+        - Enrollments
+      summary: Inscribirse a una actividad
+      description: >
+        Crea la inscripción del participante actual en la actividad indicada.
+        Es idempotente: si ya estaba inscripto, devuelve 200 con la
+        inscripción existente en lugar de duplicarla.
+      operationId: enroll
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+        - $ref: '#/components/parameters/DemoParticipantId'
+      responses:
+        '200':
+          description: El participante ya estaba inscripto; se devuelve la inscripción existente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Enrollment'
+        '201':
+          description: Inscripción creada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Enrollment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+    delete:
+      tags:
+        - Enrollments
+      summary: Cancelar mi inscripción
+      description: >
+        Cancela la inscripción del participante actual en la actividad
+        indicada y libera el cupo. Idempotente: si no existía la inscripción,
+        también responde 204.
+      operationId: unenroll
+      parameters:
+        - $ref: '#/components/parameters/ActivityId'
+        - $ref: '#/components/parameters/DemoParticipantId'
+      responses:
+        '204':
+          description: Inscripción cancelada (o inexistente); sin body.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+
 components:
+  parameters:
+    ActivityId:
+      name: activity_id
+      in: path
+      required: true
+      description: Identificador único de la actividad.
+      schema:
+        type: string
+        format: uuid
+
+    DemoParticipantId:
+      name: X-Demo-Participant-Id
+      in: header
+      required: true
+      description: >
+        Identidad controlada del entorno de pruebas. Debe ser el UUID de un
+        Participant existente. No es autenticación real; sustituye a una
+        sesión de usuario para efectos de este práctico.
+      schema:
+        type: string
+        format: uuid
+
   schemas:
     Activity:
       type: object
@@ -58,6 +153,7 @@ components:
         - title
         - starts_at
         - capacity
+        - available_slots
       properties:
         id:
           type: string
@@ -74,6 +170,30 @@ components:
           type: integer
           minimum: 0
           description: Cantidad máxima de participantes.
+        available_slots:
+          type: integer
+          minimum: 0
+          description: Cupos disponibles en este momento (capacity - inscripciones actuales).
+
+    Enrollment:
+      type: object
+      required:
+        - activity_id
+        - participant_id
+        - enrolled_at
+      properties:
+        activity_id:
+          type: string
+          format: uuid
+          description: Identificador de la actividad.
+        participant_id:
+          type: string
+          format: uuid
+          description: Identificador del participante.
+        enrolled_at:
+          type: string
+          format: date-time
+          description: Fecha y hora de inscripción en formato ISO 8601.
 
   responses:
     ActivitiesList:
@@ -92,6 +212,15 @@ components:
           schema:
             $ref: '#/components/schemas/Activity'
 
+    EnrollmentsList:
+      description: Inscripciones activas del participante actual (vacía si no tiene ninguna).
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Enrollment'
+
     NotFound:
       description: Recurso no encontrado.
       content:
@@ -102,6 +231,30 @@ components:
               detail:
                 type: string
                 example: No se encontró la actividad.
+
+    BadRequest:
+      description: Falta o no se reconoce la identidad de demostración.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: >-
+                  Falta o no se reconoce la identidad de demostración
+                  (header X-Demo-Participant-Id)
+
+    Conflict:
+      description: La actividad no tiene cupos disponibles.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: No quedan cupos disponibles para esta actividad.
 
     MethodNotAllowed:
       description: Método no permitido; la ruta solo acepta el método declarado.
