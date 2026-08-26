@@ -119,18 +119,10 @@ puede reflejar cambios hechos por fuera de Astro (por ejemplo, una inscripción 
 contra la API con Postman) sin necesidad de ningún rebuild — el HTML no sabe nada de eso, pero
 la isla sí, porque consulta el estado real en cada carga.
 
-> ¿Qué evidencia prueba dónde y cuándo se produjo esta interfaz?
-
-_(completar)_ — Referencia cruzada a las secciones 1 a 4 de este documento: el build (sección 1)
-prueba el "cuándo" del contenido estático; el HTML crudo (sección 2) prueba que ese contenido
-ya estaba resuelto antes de cualquier JavaScript; Network (sección 3) prueba cuándo se dispara
-la consulta dinámica; y los dos colores (sección 4) hacen visible, sin necesidad de leer código,
-la frontera exacta entre lo que quedó fijo del build y lo que se resuelve en cada carga del
-cliente.
 
 ---
 
-## Decisiones de diseño (para justificar en la entrega)
+## Decisiones de diseño
 
 - **`client:load` en vez de `client:visible`:** el estado de inscripción es la única región
   interactiva de la página y está visible de entrada (no más abajo, fuera del viewport inicial),
